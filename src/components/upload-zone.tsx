@@ -2,8 +2,16 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Upload, Loader2, Copy, Check, ExternalLink } from 'lucide-react';
+import { Upload, Loader2, Copy, Check, ExternalLink, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog"
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -12,6 +20,7 @@ import { QRCodeSVG } from 'qrcode.react';
 export function UploadZone() {
     const [isUploading, setIsUploading] = useState(false);
     const [cloudinaryUrl, setCloudinaryUrl] = useState<string | null>(null);
+    const [uploadResult, setUploadResult] = useState<any>(null);
     const [copied, setCopied] = useState(false);
 
     const router = useRouter();
@@ -24,6 +33,7 @@ export function UploadZone() {
 
         setIsUploading(true);
         setCloudinaryUrl(null);
+        setUploadResult(null);
         const formData = new FormData();
         formData.append('file', file);
 
@@ -39,6 +49,7 @@ export function UploadZone() {
             toast.success('Image uploaded successfully!');
 
             setCloudinaryUrl(data.url);
+            setUploadResult(data);
 
         } catch (error) {
             console.error(error);
@@ -144,6 +155,32 @@ export function UploadZone() {
                                 <Button size="icon" variant="outline" onClick={copyToClipboard} className="shrink-0 h-10 w-10">
                                     {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                                 </Button>
+                                <Dialog>
+                                    <DialogTrigger asChild>
+                                        <Button size="icon" variant="outline" className="shrink-0 h-10 w-10">
+                                            <Info className="h-4 w-4" />
+                                        </Button>
+                                    </DialogTrigger>
+                                    <DialogContent className="sm:max-w-md">
+                                        <DialogHeader>
+                                            <DialogTitle>Image Details</DialogTitle>
+                                        </DialogHeader>
+                                        <div className="grid grid-cols-3 gap-4 text-center">
+                                            <div className="flex flex-col gap-1 p-3 bg-muted/50 rounded-lg">
+                                                <span className="text-xs font-medium text-muted-foreground uppercase">Width</span>
+                                                <span className="font-semibold">{uploadResult?.width}px</span>
+                                            </div>
+                                            <div className="flex flex-col gap-1 p-3 bg-muted/50 rounded-lg">
+                                                <span className="text-xs font-medium text-muted-foreground uppercase">Height</span>
+                                                <span className="font-semibold">{uploadResult?.height}px</span>
+                                            </div>
+                                            <div className="flex flex-col gap-1 p-3 bg-muted/50 rounded-lg">
+                                                <span className="text-xs font-medium text-muted-foreground uppercase">Format</span>
+                                                <span className="font-semibold uppercase">{uploadResult?.format}</span>
+                                            </div>
+                                        </div>
+                                    </DialogContent>
+                                </Dialog>
                                 <Button size="icon" variant="ghost" className="shrink-0 h-10 w-10" onClick={() => window.open(cloudinaryUrl, '_blank')}>
                                     <ExternalLink className="h-4 w-4" />
                                 </Button>
